@@ -155,6 +155,14 @@
   .toggle button.yes.active{background:var(--ok-100); border-color:var(--ok-600); color:var(--ok-600);}
   .toggle button.no.active{background:var(--no-100); border-color:var(--no-600); color:var(--no-600);}
   .toggle button:hover{border-color:var(--ink-300);}
+  .score-select{
+    width:100%; height:36px; border-radius:8px; border:1px solid var(--line);
+    padding:0 6px; font-size:12px; font-weight:700; font-family:'Inter',sans-serif; color:var(--ink-700);
+    background-color:#fff; cursor:pointer;
+  }
+  .score-select.full{background-color:var(--ok-100); border-color:var(--ok-600); color:var(--ok-600);}
+  .score-select.zero{background-color:var(--no-100); border-color:var(--no-600); color:var(--no-600);}
+  .score-select.partial{background-color:var(--gold-100); border-color:var(--gold-500); color:var(--red-600);}
   .note-btn{
     display:flex; align-items:center; justify-content:center; gap:4px;
     border:1px dashed var(--line); background:#fff; border-radius:8px;
@@ -267,24 +275,27 @@
     padding:8px 12px; background:var(--paper-0); font-weight:700; font-size:13px; margin-bottom:8px;
   }
   #pdfReport .r-item{
-    display:flex; align-items:flex-start; gap:10px; font-size:11.5px;
+    display:table; width:100%; table-layout:fixed; border-spacing:0;
+    font-size:11.5px;
     padding:8px 0; border-bottom:1px solid var(--line); break-inside:avoid;
   }
+  #pdfReport .r-item .r-num-cell{ display:table-cell; width:32px; vertical-align:top; }
   #pdfReport .r-item .r-num{
-    flex:0 0 20px; width:20px; height:20px; border-radius:50%; background:var(--navy-600); color:#fff;
+    width:20px; height:20px; border-radius:50%; background:var(--navy-600); color:#fff;
     display:flex; align-items:center; justify-content:center; font-size:10px; font-family:'Inter',sans-serif;
   }
-  #pdfReport .r-item .r-body{ flex:1 1 auto; min-width:0; }
+  #pdfReport .r-item .r-body{ display:table-cell; vertical-align:top; padding-right:10px; }
   #pdfReport .r-item .r-cn{color:var(--ink-900); margin-bottom:3px;}
   #pdfReport .r-item .r-es{color:var(--ink-700); font-style:italic;}
   #pdfReport .r-item .r-memo{color:var(--red-600); margin-top:4px;}
-  #pdfReport .r-item .r-photos{display:flex; gap:5px; margin-top:5px; flex-wrap:wrap;}
-  #pdfReport .r-item .r-photos img{width:60px; height:60px; object-fit:cover; border-radius:5px;}
+  #pdfReport .r-item .r-photos{margin-top:8px; font-size:0;}
+  #pdfReport .r-item .r-photos img{width:295px; height:221px; object-fit:cover; border-radius:6px; border:1px solid var(--line); display:inline-block; margin:0 10px 10px 0; vertical-align:top;}
   #pdfReport .r-item .r-mark{
-    flex:0 0 58px; width:58px; text-align:center; font-weight:700; font-family:'Inter',sans-serif; padding:3px 0; border-radius:5px; height:fit-content;
+    display:table-cell; width:58px; vertical-align:top; text-align:center; font-weight:700; font-family:'Inter',sans-serif; padding:3px 0; border-radius:5px;
   }
   #pdfReport .r-mark.yes{background:var(--ok-100); color:var(--ok-600);}
   #pdfReport .r-mark.no{background:var(--no-100); color:var(--no-600);}
+  #pdfReport .r-mark.partial{background:var(--gold-100); color:var(--red-600);}
   #pdfReport .r-mark.blank{background:var(--paper-0); color:var(--ink-300);}
   .close-x{
     position:absolute; top:14px; right:16px; background:none; border:none; font-size:20px;
@@ -507,6 +518,17 @@ CATEGORIES.forEach((cat, ci) => {
     const id = 'q' + itemIndex;
     const row = document.createElement('div');
     row.className = 'item';
+    const scoreOptions = Array.from({length: it.pts + 1}, (_, v) => v)
+      .map(v => `<option value="${v}">${v} 分 / ${it.pts}</option>`).join('');
+    const scoreControlHtml = it.pts > 1
+      ? `<select class="score-select" data-id="${id}" data-pts="${it.pts}">
+           <option value="" selected>请选择 Seleccionar</option>
+           ${scoreOptions}
+         </select>`
+      : `<div class="toggle" data-id="${id}" data-pts="${it.pts}">
+           <button type="button" class="yes" data-val="1">Sí 是</button>
+           <button type="button" class="no" data-val="0">No 否</button>
+         </div>`;
     row.innerHTML = `
       <div class="item-main">
         <div class="num">${it.n}</div>
@@ -516,10 +538,7 @@ CATEGORIES.forEach((cat, ci) => {
           <div class="pts">分值 Puntos: <b>${it.pts}</b></div>
         </div>
         <div style="display:flex; flex-direction:column; gap:6px;">
-          <div class="toggle" data-id="${id}" data-pts="${it.pts}">
-            <button type="button" class="yes" data-val="yes">Sí 是</button>
-            <button type="button" class="no" data-val="no">No 否</button>
-          </div>
+          ${scoreControlHtml}
           <button type="button" class="note-btn" data-id="${id}">
             备注/照片 Nota/Foto <span class="dot"></span>
           </button>
@@ -537,7 +556,7 @@ CATEGORIES.forEach((cat, ci) => {
       </div>
     `;
     itemsWrap.appendChild(row);
-    allItems.push({id, pts:it.pts, catEl, state:null, memo:'', photos:[]});
+    allItems.push({id, pts:it.pts, catEl, score:null, memo:'', photos:[]});
   });
   catEl.appendChild(itemsWrap);
   root.appendChild(catEl);
@@ -554,8 +573,11 @@ function recalc(){
   document.querySelectorAll('.cat').forEach(c => catScores.set(c, 0));
 
   allItems.forEach(item => {
-    if(item.state === 'yes'){ score += item.pts; answered++; catScores.set(item.catEl, catScores.get(item.catEl) + item.pts); }
-    else if(item.state === 'no'){ answered++; }
+    if(item.score !== null && item.score !== undefined){
+      score += item.score;
+      answered++;
+      catScores.set(item.catEl, catScores.get(item.catEl) + item.score);
+    }
   });
 
   document.querySelectorAll('.cat').forEach(c => {
@@ -579,14 +601,29 @@ root.addEventListener('click', (e) => {
   const toggle = btn.closest('.toggle');
   const id = toggle.dataset.id;
   const item = allItems.find(i => i.id === id);
-  const val = btn.dataset.val;
-  if(item.state === val){
-    item.state = null;
+  const val = parseInt(btn.dataset.val, 10);
+  if(item.score === val){
+    item.score = null;
   } else {
-    item.state = val;
+    item.score = val;
   }
   toggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-  if(item.state) toggle.querySelector(`button[data-val="${item.state}"]`).classList.add('active');
+  if(item.score !== null) toggle.querySelector(`button[data-val="${item.score}"]`).classList.add('active');
+  recalc();
+});
+
+root.addEventListener('change', (e) => {
+  if(!e.target.matches('select.score-select')) return;
+  const sel = e.target;
+  const id = sel.dataset.id;
+  const pts = parseInt(sel.dataset.pts, 10);
+  const item = allItems.find(i => i.id === id);
+  const val = sel.value;
+  item.score = val === '' ? null : parseInt(val, 10);
+  sel.classList.remove('full', 'zero', 'partial');
+  if(item.score === pts) sel.classList.add('full');
+  else if(item.score === 0) sel.classList.add('zero');
+  else if(item.score !== null) sel.classList.add('partial');
   recalc();
 });
 
@@ -703,7 +740,8 @@ document.getElementById('auditorName').addEventListener('input', () => {
 
 document.getElementById('resetBtn').addEventListener('click', () => {
   if(!confirm('确定要清空所有填写内容吗？ ¿Seguro que deseas reiniciar el formulario?')) return;
-  allItems.forEach(i => { i.state = null; i.memo = ''; i.photos = []; });
+  allItems.forEach(i => { i.score = null; i.memo = ''; i.photos = []; });
+  document.querySelectorAll('select.score-select').forEach(s => { s.value = ''; s.classList.remove('full','zero','partial'); });
   document.querySelectorAll('.toggle button').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('textarea[id^="memo-"]').forEach(t => t.value = '');
   document.querySelectorAll('.photo-thumbs').forEach(w => w.innerHTML = '');
@@ -732,7 +770,7 @@ function buildTextReport(score, pending){
     cat.items.forEach(it => {
       idx++;
       const item = allItems[idx-1];
-      const mark = item.state === 'yes' ? '[Sí]' : (item.state === 'no' ? '[No]' : '[  ]');
+      const mark = item.score === null ? '[  ]' : `[${item.score}/${it.pts}]`;
       lines.push(`${mark} #${it.n} (${it.pts}分) ${it.cn}`);
       if(item.memo && item.memo.trim()){
         lines.push(`      备注 Memo: ${item.memo.trim()}`);
@@ -768,7 +806,7 @@ document.getElementById('submitBtn').addEventListener('click', () => {
       auditor: document.getElementById('auditorName').value,
       score, total: totalPts, pending,
       savedAt: new Date().toISOString(),
-      items: allItems.map(i => ({id:i.id, state:i.state, memo:i.memo, photoCount:i.photos.length, photos:i.photos}))
+      items: allItems.map(i => ({id:i.id, score:i.score, memo:i.memo, photoCount:i.photos.length, photos:i.photos}))
     };
     const key = 'happylamb_audit_records';
     const list = JSON.parse(localStorage.getItem(key) || '[]');
@@ -817,12 +855,12 @@ function buildPdfReport(score){
     cat.items.forEach(it => {
       idx++;
       const item = allItems[idx-1];
-      if(item.state === 'yes') catScore += it.pts;
-      const markClass = item.state === 'yes' ? 'yes' : (item.state === 'no' ? 'no' : 'blank');
-      const markText = item.state === 'yes' ? 'Sí 是' : (item.state === 'no' ? 'No 否' : '—');
+      if(item.score !== null) catScore += item.score;
+      const markClass = item.score === null ? 'blank' : (item.score === it.pts ? 'yes' : (item.score === 0 ? 'no' : 'partial'));
+      const markText = item.score === null ? '—' : `${item.score}/${it.pts}`;
       let photosHtml = '';
       if(item.photos.length){
-        photosHtml = '<div class="r-photos">' + item.photos.map(p => `<img src="${p}">`).join('') + '</div>';
+        photosHtml = '<div class="r-photos">' + item.photos.map(p => `<img src="${p}" width="295" height="221">`).join('') + '</div>';
       }
       let memoHtml = '';
       if(item.memo && item.memo.trim()){
@@ -830,7 +868,7 @@ function buildPdfReport(score){
       }
       itemsHtml += `
         <div class="r-item">
-          <div class="r-num">${it.n}</div>
+          <div class="r-num-cell"><div class="r-num">${it.n}</div></div>
           <div class="r-body">
             <div class="r-cn">${it.cn}</div>
             <div class="r-es">${it.es}</div>
@@ -909,6 +947,7 @@ document.getElementById('copyBtn').addEventListener('click', () => {
     });
   }
 });
+
 </script>
 
 </body>
