@@ -271,21 +271,25 @@
     padding:8px 12px; background:var(--paper-0); font-weight:700; font-size:13px; margin-bottom:8px;
   }
   #pdfReport .r-item{
-    display:flex; align-items:flex-start; gap:10px; font-size:11.5px;
+    display:table; width:100%; table-layout:fixed; border-spacing:0;
+    font-size:11.5px;
     padding:8px 0; border-bottom:1px solid var(--line); break-inside:avoid;
   }
+  #pdfReport .r-item .r-num-cell{ display:table-cell; width:32px; vertical-align:top; }
   #pdfReport .r-item .r-num{
-    flex:0 0 20px; width:20px; height:20px; border-radius:50%; background:var(--navy-600); color:#fff;
+    width:20px; height:20px; border-radius:50%; background:var(--navy-600); color:#fff;
     display:flex; align-items:center; justify-content:center; font-size:10px; font-family:'Inter',sans-serif;
   }
-  #pdfReport .r-item .r-body{ flex:1 1 auto; min-width:0; }
+  #pdfReport .r-item .r-body{ display:table-cell; vertical-align:top; padding-right:10px; }
   #pdfReport .r-item .r-cn{color:var(--ink-900); margin-bottom:3px;}
   #pdfReport .r-item .r-es{color:var(--ink-700); font-style:italic;}
   #pdfReport .r-item .r-memo{color:var(--red-600); margin-top:4px;}
-  #pdfReport .r-item .r-photos{display:flex; gap:5px; margin-top:5px; flex-wrap:wrap;}
-  #pdfReport .r-item .r-photos img{width:60px; height:60px; object-fit:cover; border-radius:5px;}
+  #pdfReport .r-item .r-photos{margin-top:8px;}
+  #pdfReport .r-item .r-photo-row{display:table; width:100%; table-layout:fixed; border-spacing:0; margin-bottom:8px;}
+  #pdfReport .r-item .r-photo-cell{display:table-cell; width:50%; padding-right:8px;}
+  #pdfReport .r-item .r-photo-cell img{width:100%; height:200px; object-fit:cover; border-radius:6px; border:1px solid var(--line); display:block;}
   #pdfReport .r-item .r-mark{
-    flex:0 0 58px; width:58px; text-align:center; font-weight:700; font-family:'Inter',sans-serif; padding:3px 0; border-radius:5px; height:fit-content;
+    display:table-cell; width:58px; vertical-align:top; text-align:center; font-weight:700; font-family:'Inter',sans-serif; padding:3px 0; border-radius:5px;
   }
   #pdfReport .r-mark.yes{background:var(--ok-100); color:var(--ok-600);}
   #pdfReport .r-mark.no{background:var(--no-100); color:var(--no-600);}
@@ -833,7 +837,12 @@ function buildPdfReport(score){
       const markText = item.state === 'yes' ? 'Yes 是' : (item.state === 'no' ? 'No 否' : '—');
       let photosHtml = '';
       if(item.photos.length){
-        photosHtml = '<div class="r-photos">' + item.photos.map(p => `<img src="${p}">`).join('') + '</div>';
+        let rowsHtml = '';
+        for(let pi = 0; pi < item.photos.length; pi += 2){
+          const pair = item.photos.slice(pi, pi + 2);
+          rowsHtml += '<div class="r-photo-row">' + pair.map(p => `<div class="r-photo-cell"><img src="${p}"></div>`).join('') + '</div>';
+        }
+        photosHtml = '<div class="r-photos">' + rowsHtml + '</div>';
       }
       let memoHtml = '';
       if(item.memo && item.memo.trim()){
@@ -841,7 +850,7 @@ function buildPdfReport(score){
       }
       itemsHtml += `
         <div class="r-item">
-          <div class="r-num">${it.n}</div>
+          <div class="r-num-cell"><div class="r-num">${it.n}</div></div>
           <div class="r-body">
             <div class="r-cn">${it.cn}</div>
             <div class="r-es">${it.es}</div>
