@@ -273,7 +273,7 @@
     text-align:center; background:var(--paper-0); border-radius:10px; padding:14px; margin-bottom:20px;
   }
   #pdfReport .r-score .n{font-size:34px; font-weight:900; color:var(--red-600); font-family:'Inter',sans-serif;}
-  #pdfReport .r-cat{margin-bottom:16px; break-inside:avoid;}
+  #pdfReport .r-cat{margin-bottom:16px;}
   #pdfReport .r-cat-head{
     display:flex; justify-content:space-between; border-left:4px solid var(--red-500);
     padding:8px 12px; background:var(--paper-0); font-weight:700; font-size:13px; margin-bottom:8px;
@@ -391,7 +391,7 @@
     <p class="es">Review the summary before printing or copying the record.</p>
     <div class="big-score">
       <div class="n" id="modalScore">0</div>
-      <div class="l">/ 100 分 points</div>
+      <div class="l">/ <span id="modalTotal">100</span> 分 points</div>
     </div>
     <div class="modal-row"><span>门店 Store</span><b id="modalStore">—</b></div>
     <div class="modal-row"><span>稽核日期 Date</span><b id="modalDate">—</b></div>
@@ -421,70 +421,55 @@
 </script>
 <script>
 const CATEGORIES = [
-  { cn:`清洁&服务`, es:`Cleanliness & Service`, items:[
-    {n:1, cn:`门店招牌完整、整洁，夜晚招牌清晰，亮度正常`, es:`Store signage is complete and clean; the sign is clearly visible with normal brightness at night.`, pts:1},
-    {n:1, cn:`按照营业时间开启和关闭Open Sign`, es:`The "Open" sign is turned on and off according to business hours.`, pts:1},
-    {n:1, cn:`餐厅外立面，所有窗户，玻璃门是否整洁干净，大门附近卫生情况良好，`, es:`The restaurant's exterior, all windows, and glass doors are clean and tidy; the area near the entrance is in good sanitary condition.`, pts:1},
-    {n:1, cn:`餐厅内外宣传物料（海报和立牌等）清晰整洁，使用公司标准宣传物模板。大门、窗户上的海报按照公司统一要求使用玻璃吸盘挂钩和金属海报架悬挂；门店内外张贴的所有通知和告示均使用公司模板，没有自行打印或者手写情况；门店大门及两侧玻璃（如适用）张贴物整齐，符合公司"张贴物标准`, es:`Promotional materials inside and outside the restaurant (posters, standees, etc.) are clean and tidy, using the company's standard templates. Posters on the front door and windows are hung with glass suction-cup hooks and metal poster frames per company requirements; all notices and signage posted inside and outside the store use company templates, with no self-printed or handwritten materials; items posted on the front door and side windows (if applicable) are neat and comply with the company's "Posting Materials Standard."`, pts:2},
-    {n:2, cn:`候餐区的饮品及小食品的准备：每日开始营业后饮品及小食品充足，及时补充，区域干净整洁；明确专人负责补充和清理`, es:`Beverage and snack preparation in the waiting area: after opening each day, beverages and snacks are fully stocked and promptly replenished; the area stays clean and tidy; a specific person is designated to restock and clean.`, pts:1},
-    {n:3, cn:`前厅餐具干净整洁无破损，不可以出现任何污渍; 前场餐具按照公司要求摆放正确；前厅后厨餐具，如破损严重直接更换新餐具`, es:`Front-of-house tableware is clean, undamaged, and free of any stains; it is arranged correctly per company requirements; severely damaged tableware in either the dining room or kitchen is replaced immediately with new pieces.`, pts:3},
-    {n:3, cn:`电磁炉边角清洁干净，无油渍，无异味; 电磁炉运转正常，排风扇有定期清理，电磁炉的边角和排风扇每月指定一周进行清洗`, es:`Induction cooktop edges and corners are clean, with no grease or odor; cooktops operate normally, exhaust fans are cleaned regularly, and the cooktop edges and exhaust fans are deep-cleaned during a designated week each month.`, pts:2},
-    {n:3, cn:`就餐台面、地面整洁，有无纸屑，菜叶等垃圾`, es:`Dining tabletops and floors are clean, with no paper scraps, vegetable trimmings, or other trash.`, pts:1},
-    {n:4, cn:`前厅现场管理有序性（前场备餐台station物品充足摆放整齐，加汤壶整洁且准备充足；收银台是否整洁，签单统一摆放；吧台整洁程度）；前台整理包括个人水杯水壶，酒水单，小票，外卖平台设备，耳机耳麦设备等`, es:`Orderliness of front-of-house floor management (prep stations are fully stocked and neatly arranged; soup-refill kettles are clean and adequately stocked; the register area is tidy with receipts placed uniformly; bar cleanliness); front-desk organization includes personal cups/water bottles, drink menus, receipts, delivery-platform devices, headsets, etc.`, pts:5},
-    {n:5, cn:`门店灯源清洁，出风口回风口清洁，房顶卫生清洁；`, es:`Store light fixtures are clean; supply and return vents are clean; the ceiling is in sanitary condition.`, pts:2},
-    {n:6, cn:`卫生间管理：马桶洗手池清洁，没有污渍，积水，纸屑等垃圾；洗手间有香薰，无异味；洗手间的洗手液、擦手纸、马桶纸和卷纸（朝向方向应朝上，节约使用）等消耗品充足，无缺失情况；烘干机、擦手纸设备运转正常；洗手间清洁打扫检查表使用情况`, es:`Restroom management: toilets and sinks are clean, with no stains, standing water, or paper debris; restrooms have air freshener and no odor; consumables (hand soap, paper towels, toilet paper, and roll paper — oriented facing up for economical use) are fully stocked with no shortages; hand dryers and paper-towel dispensers work normally; the restroom cleaning checklist is in use.`, pts:5},
-    {n:7, cn:`餐厅员工去完洗手间前需要脱掉后厨围裙，之后要先洗手再回到工作岗位；洗手间张贴告示，提示员工需要洗手；回到厨房后返回岗位前，还需要再次洗手。`, es:`Staff must remove their kitchen apron before using the restroom, then wash their hands before returning to their post; a sign is posted in the restroom reminding staff to wash their hands; upon returning to the kitchen, staff must wash their hands again before resuming their post.`, pts:3},
-    {n:8, cn:`后厨出餐器皿干净整洁无破损，不可以出现任何污渍，`, es:`Kitchen serving dishware is clean, undamaged, and free of any stains.`, pts:3},
-    {n:9, cn:`汤锅定期泡洗，汤锅内外干净无垢，锅底角落和鸳鸯锅中缝无长期积累的污渍；`, es:`Soup pots are soaked and washed regularly; pots are clean inside and out with no scale buildup; there is no long-term residue in the corners of the pot base or the center divider of split ("yin-yang") pots.`, pts:2},
-    {n:9, cn:`出餐托盘tray干净整洁，无明显污渍`, es:`Serving trays are clean and tidy, with no visible stains.`, pts:1},
+  { cn:`清洁`, es:`Cleanliness`, items:[
+    {n:2, cn:`门店招牌完整、整洁，夜晚招牌清晰，亮度正常，餐厅外立面，所有窗户，玻璃门是否整洁干净，大门附近卫生情况良好；餐厅内外宣传物料（海报和立牌等）清晰整洁，使用公司标准宣传物模板。大门、窗户上的海报按照公司统一要求使用玻璃吸盘挂钩和金属海报架悬挂；门店内外张贴的所有通知和告示均使用公司模板，没有自行打印或者手写情况；门店大门及两侧玻璃（如适用）张贴物整齐，符合公司"张贴物标准`, es:`Store signage is complete and clean, clearly visible with normal brightness at night; the restaurant's exterior, all windows, and glass doors are clean and tidy; the area near the entrance is in good sanitary condition. Promotional materials inside and outside the restaurant (posters, standees, etc.) are clean and tidy, using the company's standard templates. Posters on the front door and windows are hung with glass suction-cup hooks and metal poster frames per company requirements; all notices and signage posted inside and outside the store use company templates, with no self-printed or handwritten materials; items posted on the front door and side windows (if applicable) are neat and comply with the company's "Posting Materials Standard."`, pts:1},
+    {n:3, cn:`按照营业时间开启和关闭Open Sign，现场音乐开启，播放欧美流行音乐，不可播放全中文或不适合餐厅使用的音乐`, es:`The "Open" sign is turned on and off according to business hours; background music is playing Western pop music — all-Chinese music or music unsuitable for the restaurant setting must not be played.`, pts:2},
+    {n:4, cn:`候餐区的饮品及小食品的准备：每日开始营业后饮品及小食品充足，及时补充，区域干净整洁；明确专人负责补充和清理\n前厅现场管理有序性（前场备餐台station物品充足摆放整齐，加汤壶整洁且准备充足；吧台整洁程度,收餐车摆放合理，酱料台整齐有序，产品充足）；\n收银台整洁，签单统一摆放，外卖平台设备，耳机耳麦设备等`, es:`Beverage and snack preparation in the waiting area: after opening each day, beverages and snacks are fully stocked and promptly replenished; the area stays clean and tidy, with a specific person designated to restock and clean. Orderliness of front-of-house floor management (prep stations are fully stocked and neatly arranged; soup-refill kettles are clean and adequately stocked; bar cleanliness; bussing carts are placed sensibly; the sauce station is neat and well-stocked). The register area is tidy with receipts placed uniformly; delivery-platform devices, headsets, etc. are in order.`, pts:4},
+    {n:5, cn:`前厅餐具干净整洁无破损，不可以出现任何污渍; 前场餐具按照公司要求摆放正确；前厅后厨餐具，如破损严重直接更换新餐具`, es:`Front-of-house tableware is clean, undamaged, and free of any stains; it is arranged correctly per company requirements; severely damaged tableware in either the dining room or kitchen is replaced immediately with new pieces.`, pts:1},
+    {n:6, cn:`电磁炉边角清洁干净，无油渍，无异味; 电磁炉运转正常，排风扇有定期清理，电磁炉的边角和排风扇每月指定一周进行清洗`, es:`Induction cooktop edges and corners are clean, with no grease or odor; cooktops operate normally, exhaust fans are cleaned regularly, and the cooktop edges and exhaust fans are deep-cleaned during a designated week each month.`, pts:2},
+    {n:7, cn:`地面整洁，有无纸屑，菜叶等垃圾`, es:`Floors are clean, with no paper scraps, vegetable trimmings, or other trash.`, pts:4},
+    {n:8, cn:`卡座台面，门店灯源，出风口回风口，房顶卫生做到清洁，无灰尘；`, es:`Booth tabletops, store light fixtures, air supply/return vents, and the ceiling are clean and dust-free.`, pts:4},
+    {n:9, cn:`卫生间管理：马桶洗手池清洁，没有污渍，积水，纸屑等垃圾；洗手间有香薰，无异味；洗手间的洗手液、擦手纸、马桶纸和卷纸（朝向方向应朝上，节约使用）等消耗品充足，无缺失情况；烘干机、擦手纸设备运转正常；洗手间清洁打扫检查表使用情况`, es:`Restroom management: toilets and sinks are clean, with no stains, standing water, or paper debris; restrooms have air freshener and no odor; consumables (hand soap, paper towels, toilet paper, and roll paper — oriented facing up for economical use) are fully stocked with no shortages; hand dryers and paper-towel dispensers work normally; the restroom cleaning checklist is in use.`, pts:4},
+    {n:10, cn:`后厨物品按指定位置摆放整齐有序,各类物品（餐具、工具、原料、清洁用品）分区存放，互不混放,同类物品同向、整齐排列，数量一致,常用物品放置在易取位置，不常用物品统一集中存放,使用后物归原位，无遗漏、无堆放`, es:`Kitchen items are arranged neatly and in order in their designated locations; different categories of items (tableware, tools, ingredients, cleaning supplies) are stored in separate zones without mixing; items of the same type face the same direction and are lined up evenly in consistent quantities; frequently used items are kept within easy reach, while less-used items are stored together in a designated area; items are returned to their proper place after use, with nothing missing or piled up.`, pts:2},
+    {n:11, cn:`后厨出餐器皿干净整洁无破损，不可以出现任何污渍，出餐托盘tray干净整洁，无明显污渍;汤锅定期泡洗，汤锅内外干净无垢，锅底角落和鸳鸯锅中缝无长期积累的污渍；`, es:`Kitchen serving dishware is clean, undamaged, and free of any stains; serving trays are clean and tidy with no visible stains; soup pots are soaked and washed regularly, clean inside and out with no scale buildup, and there is no long-term residue in the corners of the pot base or the center divider of split ("yin-yang") pots.`, pts:1},
   ]},
-  { cn:`产品涮食管理 - 涮食指引`, es:`Product Preparation Management - Cooking Time Guide`, items:[
-    {n:10, cn:`前厅人员需了解：切薄片类肉品，建议在煮开的汤底中涮食时间为10-15秒（直到肉片颜色改变）`, es:`Front-of-house staff should know: for thinly sliced meats, the recommended cooking time in boiling broth is 10-15 seconds (until the meat changes color).`, pts:1},
-    {n:10, cn:`前厅人员需了解：海鲜类和面条类，建议在煮开的汤底中涮食时间为3-5分钟 `, es:`Front-of-house staff should know: for seafood and noodles, the recommended cooking time is 3-5 minutes.`, pts:1},
-    {n:10, cn:`前厅人员需了解：绿叶蔬菜类，建议在煮开的汤底中涮食时间为1-2分钟 `, es:`Front-of-house staff should know: for leafy greens, the recommended cooking time is 1-2 minutes.`, pts:1},
-    {n:10, cn:`前厅人员需了解：其他肉类，丸滑类，水饺云吞、豆腐菌类和根茎类蔬菜，建议在煮开的汤底中涮食时间为5分钟以上 `, es:`Front-of-house staff should know: for other meats, meatballs, dumplings/wontons, tofu, mushrooms, and root vegetables, the recommended cooking time is 5 minutes or more.`, pts:1},
-    {n:10, cn:`前厅人员对肉品名称及知识的掌握，需要能够准确说出肉品名称`, es:`Front-of-house staff must know meat item names and be able to state them accurately.`, pts:2},
-  ]},
-  { cn:`品质`, es:`Quality`, items:[
-    {n:11, cn:`肉品薄厚，分量 - 如视觉感受不合标准，进行食品秤称量 `, es:`Meat thickness and portion size — if it doesn't meet the standard by visual inspection, weigh it on a food scale.`, pts:4},
-    {n:11, cn:`肉品颜色，缓化 - 不可以使用微波炉打，再上刨肉机 `, es:`Meat color and thawing — do not use a microwave to thaw before slicing on the meat slicer.`, pts:4},
-    {n:11, cn:`肉品摆拼，出品 - 出品摆拼标准`, es:`Meat plating and presentation — per the established presentation standard.`, pts:3},
-    {n:11, cn:`肉品蔬菜、海鲜、菌类等出餐前由后厨备餐抓码人员负责喷水`, es:`Before serving, kitchen prep staff must spray water on meat, vegetables, seafood, and mushrooms, as appropriate.`, pts:2},
-    {n:12, cn:`配锅标准工具使用情况：\n大蒜：清汤半锅 - 2平勺"1/2CUP" 140g；清汤锅大锅 - 4平勺"1/2CUP" 280g；辣汤半锅 - 1平勺"1/2CUP" 70g；辣汤大锅 - 2平勺"1/2CUP" 140g\n辣油：辣汤半锅 - 1勺"8oz勺" 8oz；辣汤大锅 - 1勺"12oz勺" 12oz 或 1.5勺"8oz勺" 12oz\n辣汤粉：辣汤半锅 - 1平勺"1/3CUP" 63g；辣汤大锅 - 2平勺"1/3CUP" 126g\n清汤粉：清汤半锅 - 1平勺"1/4CUP" 53g；清汤大锅 - 2平勺"1/4CUP" 106g 或 1平勺"1/2CUP" 106g\n番茄锅底料：番茄半锅 - 1勺"1CUP" 250g；番茄大锅 - 2勺"1CUP" 500g\n牛油锅辅料粉：牛油半锅 - 1平勺"1/3CUP" 62.5g；牛油大锅 - 2平勺"1/3CUP" 125g\n金汤锅底料：金汤半锅 - 1勺"1/2CUP" 135g；金汤大锅 - 2勺"1/2CUP" 270g`, es:`Standard tools used for seasoning the pot base:\nGarlic: half-pot clear broth - 2 level scoops "1/2 CUP" 140g; large pot clear broth - 4 level scoops "1/2 CUP" 280g; half-pot spicy broth - 1 level scoop "1/2 CUP" 70g; large pot spicy broth - 2 level scoops "1/2 CUP" 140g\nChili oil: half-pot spicy broth - 1 scoop "8oz scoop" 8oz; large pot spicy broth - 1 scoop "12oz scoop" 12oz or 1.5 scoops "8oz scoop" 12oz\nSpicy broth powder: half-pot spicy broth - 1 level scoop "1/3 CUP" 63g; large pot spicy broth - 2 level scoops "1/3 CUP" 126g\nClear broth powder: half-pot clear broth - 1 level scoop "1/4 CUP" 53g; large pot clear broth - 2 level scoops "1/4 CUP" 106g or 1 level scoop "1/2 CUP" 106g\nTomato base mix: half-pot tomato - 1 scoop "1 CUP" 250g; large pot tomato - 2 scoops "1 CUP" 500g\nButter-broth auxiliary powder: half-pot butter broth - 1 level scoop "1/3 CUP" 62.5g; large pot butter broth - 2 level scoops "1/3 CUP" 125g\nGolden broth base: half-pot golden broth - 1 scoop "1/2 CUP" 135g; large pot golden broth - 2 scoops "1/2 CUP" 270g`, pts:5},
-    {n:12, cn:`原则上不允许有大量的隔夜配好的锅底（汤粉会湿）`, es:`In principle, large quantities of pot base prepared the night before are not allowed (the soup powder becomes damp).`, pts:2},
-    {n:12, cn:`汤底大蒜投放量，按照标准，如视觉发现有问题的，使用食品秤称量`, es:`The garlic amount added to the broth base should follow the standard; if a visual issue is detected, weigh it on a food scale.`, pts:2},
-    {n:12, cn:`清汤，是否在打汤后加清油和白酒`, es:`For clear broth, check whether oil and white liquor (baijiu) are added after preparing the broth.`, pts:1},
-    {n:12, cn:`口味，整体感觉偏淡或偏咸的话，在清汤锅底开锅时测盐度。`, es:`Flavor: if the overall taste seems too bland or too salty, measure the salinity when the clear-broth pot is first started.`, pts:2},
-    {n:12, cn:`检查原汤的香味、颜色和浓度；鸡汤颜色浓白、当归味适中、表面无油（或少量）`, es:`Check the aroma, color, and richness of the base broth; chicken broth should have a rich white color, a moderate angelica (dang gui) flavor, and little to no oil on the surface.`, pts:3},
-    {n:12, cn:`出汤高度`, es:`Broth serving level/height.`, pts:1},
-    {n:12, cn:`出汤温度，不低于140华氏度（60摄氏度）； 打汤员以S/Z型搅锅4-5次、致使锅底中颗粒状原料彻底融化, 并擦拭锅边汤渍油渍 `, es:`Broth serving temperature is not below 140°F (60°C); the person filling the broth stirs the pot in an "S/Z" pattern 4-5 times to fully dissolve granular ingredients at the bottom, and wipes broth/oil residue from the pot's rim.`, pts:2},
-    {n:13, cn:`试菜：门店调制口味类产品，每次抽查自制类菜品涮食并品尝口味口感，是否好吃，抽查范围（烤串、丸滑类、自制凉菜、卤制羊蝎子、小羊腿）`, es:`Taste testing: for house-made flavor products, sample and taste self-made dishes each visit to check flavor and texture; sampling scope includes grilled skewers, meatballs, house-made cold dishes, braised lamb spine, and small lamb legs.`, pts:3},
+  { cn:`品质`, es:`Food Quality`, items:[
+    {n:12, cn:`肉品薄厚，分量 - 如视觉感受不合标准，进行食品秤称量 `, es:`Meat thickness and portion size — if it doesn't meet the standard by visual inspection, weigh it on a food scale.`, pts:2},
+    {n:12, cn:`肉品颜色，缓化 - 不可以使用微波炉打，再上刨肉机 `, es:`Meat color and thawing — do not use a microwave to thaw before slicing on the meat slicer.`, pts:3},
+    {n:12, cn:`肉品摆拼，出品 - 出品摆拼标准`, es:`Meat plating and presentation — per the established presentation standard.`, pts:1},
+    {n:12, cn:`蔬菜、海鲜、菌类等出餐前由后厨备餐抓码人员负责喷水`, es:`Before serving, kitchen prep staff must spray water on vegetables, seafood, and mushrooms, as appropriate.`, pts:1},
+    {n:12, cn:`蔬菜、海鲜、菌类等出餐前清理干净无杂物（特别蔬菜）`, es:`Before serving, vegetables, seafood, and mushrooms must be cleaned of any debris (especially vegetables).`, pts:3},
+    {n:13, cn:`配锅标准工具使用情况：（Lynnwood店，Tacoma店标准另备注）\n清汤半锅：大蒜2平勺"1/2CUP" 140g 55粒  大葱30g/5段  鲜姜20g/5片 鸡精1平勺 "1/2 oz " 15g 猪油 1满勺'1/2oz" 15g 豆豉 1勺"1ml" 8粒 清汤粉：1平勺"1/8CUP" 28g  \n辣汤半锅：大蒜1平勺"1/2CUP" 70g 28粒 小葱 -10g/5段 鸡精1平勺 "1/2 oz " 15g  豆豉 1勺"1ml" 8粒  辣油 1勺"8oz勺" 8oz 辣汤粉1平勺"1/8CUP" 32g   辣料 1平勺"1/2CUP" 61g 孜然粉  1平勺"15ml"6g\n番茄锅：鸡精 1平勺"15ml" 10g 番茄酱料1勺"6oz" 250g\n酸汤锅：鸡精 1平勺"15ml" 10g  酸汤酱料 1平勺"4oz" 135g\n菌菇锅：鸡精 1平勺"5ml" 4g   蘑菇粉 1平勺"1/3CUP" 60g`, es:`Standard tools used for seasoning the pot base (Lynnwood and Tacoma have separate specifications):\nHalf-pot clear broth: garlic — 2 level scoops "1/2 CUP" 140g / 55 cloves; green onion 30g / 5 segments; fresh ginger 20g / 5 slices; chicken bouillon — 1 level scoop "1/2 oz" 15g; lard — 1 full scoop "1/2 oz" 15g; fermented black beans — 1 scoop "1ml" 8 pieces; clear broth powder — 1 level scoop "1/8 CUP" 28g.\nHalf-pot spicy broth: garlic — 1 level scoop "1/2 CUP" 70g / 28 cloves; scallion — 10g / 5 segments; chicken bouillon — 1 level scoop "1/2 oz" 15g; fermented black beans — 1 scoop "1ml" 8 pieces; chili oil — 1 scoop "8oz scoop" 8oz; spicy broth powder — 1 level scoop "1/8 CUP" 32g; chili seasoning — 1 level scoop "1/2 CUP" 61g; cumin powder — 1 level scoop "15ml" 6g.\nTomato pot: chicken bouillon — 1 level scoop "15ml" 10g; tomato sauce base — 1 scoop "6oz" 250g.\nSour soup pot: chicken bouillon — 1 level scoop "15ml" 10g; sour soup sauce base — 1 level scoop "4oz" 135g.\nMushroom pot: chicken bouillon — 1 level scoop "5ml" 4g; mushroom powder — 1 level scoop "1/3 CUP" 60g.`, pts:4},
+    {n:14, cn:`原则上不允许有大量的隔夜配好的锅底（汤粉会湿）`, es:`In principle, large quantities of pot base prepared the night before are not allowed (the soup powder becomes damp).`, pts:1},
+    {n:14, cn:`汤底大蒜，当归等配料投放量，按照标准，如视觉发现有问题的，使用食品秤称量`, es:`The amount of garlic, angelica root (dang gui), and other seasonings added to the broth base should follow the standard; if a visual issue is detected, weigh it on a food scale.`, pts:2},
+    {n:14, cn:`清汤，是否在打汤后加油和白酒`, es:`For clear broth, check whether oil and white liquor (baijiu) are added after preparing the broth.`, pts:1},
+    {n:14, cn:`口味，整体感觉偏淡或偏咸的话，在清汤锅底开锅时测盐度。`, es:`Flavor: if the overall taste seems too bland or too salty, measure the salinity when the clear-broth pot is first started.`, pts:2},
+    {n:14, cn:`检查原汤的香味、颜色和浓度；鸡汤颜色浓白、表面无油（或少量）`, es:`Check the aroma, color, and richness of the base broth; chicken broth should have a rich white color with little to no oil on the surface.`, pts:1},
+    {n:14, cn:`出汤高度达 80%汤位线`, es:`Broth is filled to 80% of the fill line.`, pts:3},
+    {n:14, cn:`出汤温度，不低于140华氏度（60摄氏度）； 打汤员以S/Z型搅锅4-5次、致使锅底中颗粒状原料彻底融化, 并擦拭锅边汤渍油渍 `, es:`Broth serving temperature is not below 140°F (60°C); the person filling the broth stirs the pot in an "S/Z" pattern 4-5 times to fully dissolve granular ingredients at the bottom, and wipes broth/oil residue from the pot's rim.`, pts:1},
+    {n:15, cn:`试菜：门店调制口味类产品，每次抽查自制类菜品涮食并品尝口味口感，是否好吃，抽查范围（烤串、丸滑类、自制凉菜、卤制羊蝎子、小羊腿）`, es:`Taste testing: for house-made flavor products, sample and taste self-made dishes each visit to check flavor and texture; sampling scope includes grilled skewers, meatballs, house-made cold dishes, braised lamb spine, and small lamb legs.`, pts:5},
   ]},
   { cn:`食品安全`, es:`Food Safety`, items:[
-    {n:14, cn:`没有虫类和鼠类的迹象：至少一个月杀虫一次，根据情况增加次数，检查杀虫记录，必须在一个月内检查一次；检查时查看易存蟑螂的位置，查看是否有老鼠屎等痕迹`, es:`No signs of insects or rodents: pest control at least once a month, increasing frequency as needed; pest-control records must be reviewed at least once a month; during inspection, check areas where cockroaches tend to hide and look for signs such as rodent droppings.`, pts:3},
-    {n:15, cn:`自制加工食物（自卷肉，丸滑馅类，凉菜，面点等）均有遮盖和日期标签：用油性记号笔标示日期，避免标签掉落`, es:`House-made processed foods (self-rolled meat, meatball fillings, cold dishes, dough items, etc.) are covered and date-labeled, using an oil-based marker so labels don't fall off.`, pts:1},
-    {n:15, cn:`热食温度在华氏135度以上：所有后厨出餐热食必须达到135度以上-使用测温枪`, es:`Hot food temperature is above 135°F: all hot food leaving the kitchen must exceed 135°F — verify with a temperature gun.`, pts:1},
-    {n:15, cn:`冰箱冰柜风柜冻箱中都有温度计且显示准确：检查风柜冻柜自带温度计，其他所有小冰箱冰柜抓马柜中必须自己放一个小温度计，且温度达到要求：冷藏低于41华氏度度，冷冻温度在0华氏度或以下`, es:`All refrigerators, freezers, and reach-in coolers have thermometers showing accurate readings: check the built-in thermometers of walk-in coolers/freezers; every other small refrigerator/cooler must have its own thermometer, and temperatures must meet the standard: refrigeration below 41°F, freezing at 0°F or below.`, pts:1},
-    {n:15, cn:`食物储存适当（如：冻柜中的食物摆放层续符合卫生局要求）储存架存放：熟食放上层，生食放下层，所有食物距离地面超过6inch`, es:`Food is stored appropriately (e.g., food placement in the freezer complies with health-department requirements); on storage shelves: cooked food on top, raw food on the bottom, all food more than 6 inches off the floor.`, pts:1},
-    {n:16, cn:`有红色消毒水桶（放消毒水）：刨肉机旁边1个，抓码台旁边一个，吧台一个；放漂白水（1:99）随时取用；以证明接触食物的设备（刨肉机，酒吧，砧板，案板，工作台等）有消毒`, es:`Red sanitizer buckets are present: one by the meat slicer, one by the prep station, and one at the bar; bleach solution (1:99) is available at all times, to confirm that equipment in contact with food (slicer, bar, cutting boards, prep tables, etc.) is being sanitized.`, pts:1},
+    {n:16, cn:`没有虫类和鼠类的迹象：至少一个月杀虫一次，根据情况增加次数，检查杀虫记录，必须在一个月内检查一次；检查时查看易存蟑螂的位置，查看是否有老鼠屎等痕迹`, es:`No signs of insects or rodents: pest control at least once a month, increasing frequency as needed; pest-control records must be reviewed at least once a month; during inspection, check areas where cockroaches tend to hide and look for signs such as rodent droppings.`, pts:2},
+    {n:17, cn:`餐厅员工去完洗手间前需要脱掉后厨围裙，之后要先洗手再回到工作岗位；洗手间张贴告示，提示员工需要洗手；回到厨房后返回岗位前，还需要再次洗手。`, es:`Staff must remove their kitchen apron before using the restroom, then wash their hands before returning to their post; a sign is posted in the restroom reminding staff to wash their hands; upon returning to the kitchen, staff must wash their hands again before resuming their post.`, pts:2},
+    {n:18, cn:`自制加工食物（自卷肉，丸滑馅类，凉菜，面点等）均有遮盖和日期标签：用油性记号笔标示日期，避免标签掉落`, es:`House-made processed foods (self-rolled meat, meatball fillings, cold dishes, dough items, etc.) are covered and date-labeled, using an oil-based marker so labels don't fall off.`, pts:5},
+    {n:18, cn:`热食温度在华氏135度以上：所有后厨出餐热食必须达到135度以上-使用测温枪`, es:`Hot food temperature is above 135°F: all hot food leaving the kitchen must exceed 135°F — verify with a temperature gun.`, pts:2},
+    {n:18, cn:`冰箱冰柜风柜冻箱中都有温度计且显示准确：检查风柜冻柜自带温度计，其他所有小冰箱冰柜抓马柜中必须自己放一个小温度计，且温度达到要求：冷藏低于41华氏度度，冷冻温度在0华氏度或以下`, es:`All refrigerators, freezers, and reach-in coolers have thermometers showing accurate readings: check the built-in thermometers of walk-in coolers/freezers; every other small refrigerator/cooler must have its own thermometer, and temperatures must meet the standard: refrigeration below 41°F, freezing at 0°F or below.`, pts:2},
+    {n:18, cn:`食物储存适当（如：冻柜中的食物摆放层续符合卫生局要求）储存架存放：熟食放上层，生食放下层，所有食物距离地面超过6inch,食物遵循先进先出（FIFO）原则`, es:`Food is stored appropriately (e.g., food placement in the freezer complies with health-department requirements); on storage shelves: cooked food on top, raw food on the bottom, all food more than 6 inches off the floor; food follows the First-In, First-Out (FIFO) principle.`, pts:5},
+    {n:19, cn:`有红色消毒水桶（放消毒水）：刨肉机旁边1个，抓码台旁边一个，吧台一个；放漂白水（1:99）随时取用；以证明接触食物的设备（刨肉机，酒吧，砧板，案板，工作台等）有消毒`, es:`Red sanitizer buckets are present: one by the meat slicer, one by the prep station, and one at the bar; bleach solution (1:99) is available at all times, to confirm that equipment in contact with food (slicer, bar, cutting boards, prep tables, etc.) is being sanitized.`, pts:2},
   ]},
-  { cn:`餐具 / 设施设备维护`, es:`Tableware / Facility & Equipment Maintenance`, items:[
-    {n:17, cn:`店面设备运转正常：刨肉机、烤箱、微波炉、打面机、制冰机、热水炉、煮水器、滤水系统、煮汤炉、油锅炉、炒锅`, es:`Store equipment operates normally: meat slicer, oven, microwave, dough mixer, ice machine, water heater, water boiler, water filtration system, soup burner, fryer, and wok range.`, pts:1},
-    {n:17, cn:`门店系统运转正常：排烟系统、汇风系统、空调系统、洗碗机、洗杯机`, es:`Store systems operate normally: exhaust system, ventilation system, HVAC, dishwasher, and glass washer.`, pts:1},
-    {n:17, cn:`门店上水开关（热水开关）和下水排污系统（油池，下水道）运转正常`, es:`Store water-supply valves (hot water) and drainage systems (grease trap, drains) operate normally.`, pts:1},
-    {n:17, cn:`门店冻库、冷库和抓码冰箱运转正常；库门是否关闭完好，不漏气（如漏气导致温度达不到要求，耗费电力）`, es:`Store freezer, walk-in cooler, and prep-station refrigerator operate normally; unit doors close properly with no air leaks (a leak prevents reaching the required temperature and wastes electricity).`, pts:1},
-    {n:17, cn:`门店洗手间马桶、洗手池、镜面、抽纸、垃圾桶运转正常`, es:`Store restroom toilet, sink, mirror, paper dispenser, and trash can operate normally.`, pts:1},
-    {n:17, cn:`门店灯光：灯光光源颜色，无坏损（坏损需及时更换），亮度正常`, es:`Store lighting: light-source color is correct, no damaged fixtures (must be replaced promptly), and brightness is normal.`, pts:1},
-    {n:17, cn:`后厨Hood排烟罩过滤网，定期拆下使用洗碗机清洗，至少每月一次`, es:`Kitchen hood exhaust filters are removed and washed in the dishwasher periodically, at least once a month.`, pts:1},
+  { cn:`餐具 / 设施设备维护`, es:`Tableware/Equipment`, items:[
+    {n:20, cn:`店面设备运转正常：刨肉机、烤箱、微波炉、打面机、制冰机、热水炉、煮水器、滤水系统、煮汤炉、油锅炉、炒锅`, es:`Store equipment operates normally: meat slicer, oven, microwave, dough mixer, ice machine, water heater, water boiler, water filtration system, soup burner, fryer, and wok range.`, pts:1},
+    {n:20, cn:`门店系统运转正常：排烟系统、汇风系统、空调系统、洗碗机、洗杯机\n门店灯光：灯光光源颜色，无坏损（坏损需及时更换），亮度正常\n门店上水开关（热水开关）和下水排污系统（油池，下水道）运转正常`, es:`Store systems operate normally: exhaust system, ventilation system, HVAC, dishwasher, and glass washer. Store lighting: light-source color is correct, no damaged fixtures (must be replaced promptly), and brightness is normal. Store water-supply valves (hot water) and drainage systems (grease trap, drains) operate normally.`, pts:1},
+    {n:20, cn:`门店冻库、冷库和抓码冰箱运转正常；库门是否关闭完好，不漏气（如漏气导致温度达不到要求，耗费电力）`, es:`Store freezer, walk-in cooler, and prep-station refrigerator operate normally; unit doors close properly with no air leaks (a leak prevents reaching the required temperature and wastes electricity).`, pts:1},
+    {n:20, cn:`门店洗手间马桶、洗手池、镜面、抽纸、垃圾桶运转正常`, es:`Store restroom toilet, sink, mirror, paper dispenser, and trash can operate normally.`, pts:1},
+    {n:20, cn:`后厨Hood排烟罩过滤网，定期拆下使用洗碗机清洗，至少每月一次`, es:`Kitchen hood exhaust filters are removed and washed in the dishwasher periodically, at least once a month.`, pts:1},
   ]},
-  { cn:`人事管理和档案管理`, es:`HR Management & Records Management`, items:[
-    {n:18, cn:`在显著位置，张贴工资和工时法海报 - 查看张贴位置，询问门店负责人`, es:`Post the Wage and Hour Law poster in a visible location — check the posting location and ask the store manager.`, pts:1},
-    {n:18, cn:`在显著位置，张贴作为工人的权利海报 - 查看张贴位置，询问门店负责人`, es:`Post the Employee Rights poster in a visible location — check the posting location and ask the store manager.`, pts:1},
-    {n:18, cn:`在显著位置，张贴工作安全和健康法海报 - 查看张贴位置，询问门店负责人`, es:`Post the Workplace Safety and Health Law poster in a visible location — check the posting location and ask the store manager.`, pts:1},
-    {n:19, cn:`门店营业许可BusinessLicense（或相同证照），酒牌AlcoholLicense（如适用），卫生许可HealthPermit等证照在有效期内并按要求悬挂展示`, es:`The store's Business License (or equivalent), Alcohol License (if applicable), Health Permit, and other licenses are within their valid period and displayed as required.`, pts:2},
-    {n:20, cn:`门店DailyLog正常使用并记录，日常发生的特殊情况，例如员工迟到或者其他违反员工手册的行为，记录后要求当班经理和当事人签字；门店准备笔记本，稽核时检查使用情况`, es:`The store's Daily Log is used and recorded properly; day-to-day incidents, such as employee tardiness or other violations of the employee handbook, are recorded and require signatures from both the shift manager and the individual involved; the store keeps a notebook, and its use is checked during audits.`, pts:3},
-    {n:20, cn:`门店根据所在州和城市要求，检查卫生证明或食品安全ID；入职时检查并在每年7月进行一次复查是否过期`, es:`Per state and city requirements, check health certificates or food handler IDs; verify at hire and re-verify every July to confirm they haven't expired.`, pts:1},
-    {n:20, cn:`档案管理（人事管理，门店合约和证照管理）`, es:`Records management (HR management, store contracts, and license management).`, pts:3},
+  { cn:`人事管理和档案管理`, es:`Employee File/Restaurant Documents`, items:[
+    {n:21, cn:`在显著位置，张贴工资和工时法海报，作为工人的权利海报，工作安全和健康法海报 - 查看张贴位置，询问门店负责人`, es:`Post the Wage and Hour Law poster, the Employee Rights poster, and the Workplace Safety and Health Law poster in a visible location — check the posting location and ask the store manager.`, pts:3},
+    {n:22, cn:`档案管理（门店合约和证照管理）\n门店营业许可BusinessLicense（或相同证照），酒牌AlcoholLicense（如适用），卫生许可HealthPermit等证照在有效期内并按要求悬挂展示`, es:`Records management (store contracts and license management): the store's Business License (or equivalent), Alcohol License (if applicable), Health Permit, and other licenses are within their valid period and displayed as required.`, pts:3},
+    {n:23, cn:`门店DailyLog正常使用并记录（日常发生的特殊情况，例如员工迟到或者其他违反员工手册的行为，记录后要求当班经理和当事人签字；门店准备笔记本，稽核时检查使用情况）`, es:`The store's Daily Log is used and recorded properly; day-to-day incidents, such as employee tardiness or other violations of the employee handbook, are recorded and require signatures from both the shift manager and the individual involved; the store keeps a notebook, and its use is checked during audits.`, pts:2},
+    {n:23, cn:`门店根据所在州和城市要求，检查卫生证明或食品安全ID；入职时检查并在每年7月进行一次复查是否过期`, es:`Per state and city requirements, check health certificates or food handler IDs; verify at hire and re-verify every July to confirm they haven't expired.`, pts:2},
   ]},
 ];
 
@@ -804,6 +789,7 @@ document.getElementById('submitBtn').addEventListener('click', () => {
   const pending = allItems.length - answered;
 
   document.getElementById('modalScore').textContent = score;
+  document.getElementById('modalTotal').textContent = totalPts;
   document.getElementById('modalStore').textContent = document.getElementById('storeSelect').value;
   document.getElementById('modalDate').textContent = document.getElementById('auditDate').value;
   document.getElementById('modalAuditor').textContent = document.getElementById('auditorName').value;
@@ -861,7 +847,9 @@ function buildPdfReport(score){
     </div>
   `;
   let idx = 0;
+  let catIdx = 0;
   CATEGORIES.forEach(cat => {
+    catIdx++;
     const catPts = cat.items.reduce((s,it)=>s+it.pts,0);
     let catScore = 0;
     let itemsHtml = '';
@@ -876,7 +864,7 @@ function buildPdfReport(score){
         let rowsHtml = '';
         for(let pi = 0; pi < item.photos.length; pi += 2){
           const pair = item.photos.slice(pi, pi + 2);
-          rowsHtml += '<div class="r-photo-row">' + pair.map(p => `<div class="r-photo-cell"><img src="${p}"></div>`).join('') + '</div>';
+          rowsHtml += '<div class="r-photo-row">' + pair.map(p => `<div class="r-photo-cell"><img src="${p}"></div>`).join('') + (pair.length < 2 ? '<div class="r-photo-cell"></div>' : '') + '</div>';
         }
         photosHtml = '<div class="r-photos">' + rowsHtml + '</div>';
       }
@@ -899,7 +887,7 @@ function buildPdfReport(score){
     });
     html += `
       <div class="r-cat">
-        <div class="r-cat-head">
+        <div class="r-cat-head${catIdx > 1 ? ' r-cat-head-break' : ''}">
           <span>${cat.cn} / ${cat.es}</span>
           <span>${catScore} / ${catPts}</span>
         </div>
